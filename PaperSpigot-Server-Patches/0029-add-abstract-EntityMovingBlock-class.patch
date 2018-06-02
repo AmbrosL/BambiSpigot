@@ -1,0 +1,161 @@
+From 2a6b0dfcfb80026b8c7248e8c91477c216df3ce3 Mon Sep 17 00:00:00 2001
+From: AmbrosL <AmbrosL@users.noreply.github.com>
+Date: Sat, 2 Jun 2018 19:59:53 +0200
+Subject: [PATCH] add abstract EntityMovingBlock class
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+index e670bfc5..fb763975 100644
+--- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+@@ -6,7 +6,7 @@ import java.util.Iterator;
+ 
+ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+ 
+-public class EntityFallingBlock extends Entity {
++public class EntityFallingBlock extends EntityMovingBlock {
+ 
+     private IBlockData block;
+     public int ticksLived;
+@@ -16,37 +16,15 @@ public class EntityFallingBlock extends Entity {
+     private int fallHurtMax = 40;
+     private float fallHurtAmount = 2.0F;
+     public NBTTagCompound tileEntityData;
+-    public org.bukkit.Location sourceLoc; // PaperSpigot
+ 
+     // PaperSpigot start - Add FallingBlock source location API
+-    public EntityFallingBlock(World world) {
+-        this(null, world);
+-    }
+-
+-    public EntityFallingBlock(org.bukkit.Location loc, World world) {
+-        super(world);
+-        sourceLoc = loc;
+-        this.loadChunks = world.paperSpigotConfig.loadUnloadedFallingBlocks; // PaperSpigot
+-    }
+-
+     public EntityFallingBlock(World world, double d0, double d1, double d2, IBlockData iblockdata) {
+         this(null, world, d0, d1, d2, iblockdata);
+     }
+ 
+     public EntityFallingBlock(org.bukkit.Location loc, World world, double d0, double d1, double d2, IBlockData iblockdata) {
+-        super(world);
+-        sourceLoc = loc;
+-    // PaperSpigot end
++        super(loc, world, d0, d1, d2);
+         this.block = iblockdata;
+-        this.k = true;
+-        this.setSize(0.98F, 0.98F);
+-        this.setPosition(d0, d1, d2);
+-        this.motX = 0.0D;
+-        this.motY = 0.0D;
+-        this.motZ = 0.0D;
+-        this.lastX = d0;
+-        this.lastY = d1;
+-        this.lastZ = d2;
+         this.loadChunks = world.paperSpigotConfig.loadUnloadedFallingBlocks; // PaperSpigot
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityMovingBlock.java b/src/main/java/net/minecraft/server/EntityMovingBlock.java
+new file mode 100644
+index 00000000..aec2add2
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/EntityMovingBlock.java
+@@ -0,0 +1,20 @@
++package net.minecraft.server;
++
++import org.bukkit.Location;
++
++public abstract class EntityMovingBlock extends Entity { // SulphurSpigot
++
++    public Location sourceLoc;
++
++    public EntityMovingBlock(Location loc, World world, double d0, double d1, double d2) {
++        super(world);
++        this.sourceLoc = loc;
++        this.k = true;
++        this.setSize(0.98F, 0.98F);
++        this.setPosition(d0, d1, d2);
++        this.motX = this.motY = this.motZ = 0.0D;
++        this.lastX = d0;
++        this.lastY = d1;
++        this.lastZ = d2;
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+index ab163cd1..a3be2894 100644
+--- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+@@ -2,39 +2,20 @@ package net.minecraft.server;
+ 
+ import org.bukkit.event.entity.ExplosionPrimeEvent; // CraftBukkit
+ 
+-public class EntityTNTPrimed extends Entity {
++public class EntityTNTPrimed extends EntityMovingBlock {
+ 
+     public int fuseTicks;
+     private EntityLiving source;
+     public float yield = 4; // CraftBukkit - add field
+     public boolean isIncendiary = false; // CraftBukkit - add field
+-    public org.bukkit.Location sourceLoc; // PaperSpigot
+ 
+     // PaperSpigot start - TNT source location API
+-    public EntityTNTPrimed(World world) {
+-        this(null, world);
+-    }
+-
+-    public EntityTNTPrimed(org.bukkit.Location loc, World world) {
+-        super(world);
+-        sourceLoc = loc;
+-    // PaperSpigot end
+-        this.k = true;
+-        this.setSize(0.98F, 0.98F);
+-        this.loadChunks = world.paperSpigotConfig.loadUnloadedTNTEntities; // PaperSpigot
+-    }
+-
+     public EntityTNTPrimed(org.bukkit.Location loc, World world, double d0, double d1, double d2, EntityLiving entityliving) {
+-        this(loc, world);
+-        this.setPosition(d0, d1, d2);
+-
+-        this.motX = this.motZ = 0.0D; // SulphurSpigot - always fix cannons
++        super(loc, world, d0, d1, d2);
+         this.motY = 0.20000000298023224D;
+         this.fuseTicks = 80;
+-        this.lastX = d0;
+-        this.lastY = d1;
+-        this.lastZ = d2;
+         this.source = entityliving;
++        this.loadChunks = world.paperSpigotConfig.loadUnloadedTNTEntities; // PaperSpigot
+     }
+ 
+     protected void h() {}
+diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
+index c4ebdba0..e1377561 100644
+--- a/src/main/java/net/minecraft/server/Explosion.java
++++ b/src/main/java/net/minecraft/server/Explosion.java
+@@ -141,7 +141,7 @@ public class Explosion {
+                         entity.forceExplosionKnockback = false;
+                         boolean wasDamaged = entity.damageEntity(DamageSource.explosion(this), (float) ((int) ((d13 * d13 + d13) / 2.0D * 8.0D * (double) f3 + 1.0D)));
+                         CraftEventFactory.entityDamage = null;
+-                        if (!wasDamaged && !(entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) && !entity.forceExplosionKnockback) {
++                        if (!wasDamaged && !(entity instanceof EntityMovingBlock) && !entity.forceExplosionKnockback) {
+                             continue;
+                         }
+                         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 6f0b6efc..70c8e415 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1232,8 +1232,7 @@ public abstract class World implements IBlockAccess {
+ 
+         if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
+         if (entity instanceof EntityArmorStand) return arraylist; // TacoSpigot - Optimize armor stand movement
+-        if (entity instanceof EntityTNTPrimed) return arraylist; // TacoSpigot - Optimize tnt entity movement
+-        if (entity instanceof EntityFallingBlock) return arraylist; // TacoSpigot - Optimize falling block movement
++        if (entity instanceof EntityMovingBlock) return arraylist; // TacoSpigot - Optimize moving block entity movement
+ 
+         double d0 = 0.25D;
+         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
+-- 
+2.17.1.windows.2
+
