@@ -1,11 +1,11 @@
-From 2a6b0dfcfb80026b8c7248e8c91477c216df3ce3 Mon Sep 17 00:00:00 2001
+From 86abb715360cd9bdebc9330fd22e7659210aad06 Mon Sep 17 00:00:00 2001
 From: AmbrosL <AmbrosL@users.noreply.github.com>
 Date: Sat, 2 Jun 2018 19:59:53 +0200
 Subject: [PATCH] add abstract EntityMovingBlock class
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
-index e670bfc5..fb763975 100644
+index e670bfc5..5be17edb 100644
 --- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
 +++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
 @@ -6,7 +6,7 @@ import java.util.Iterator;
@@ -56,12 +56,33 @@ index e670bfc5..fb763975 100644
          this.loadChunks = world.paperSpigotConfig.loadUnloadedFallingBlocks; // PaperSpigot
      }
  
+@@ -283,20 +261,4 @@ public class EntityFallingBlock extends Entity {
+         return this.block;
+     }
+ 
+-    // SulphurSpigot start - always fix cannons
+-    @Override
+-    public double f(double d0, double d1, double d2) {
+-
+-        double d3 = this.locX - d0;
+-        double d4 = this.locY + this.getHeadHeight() - d1;
+-        double d5 = this.locZ - d2;
+-
+-        return (double) MathHelper.sqrt(d3 * d3 + d4 * d4 + d5 * d5);
+-    }
+-
+-    @Override
+-    public float getHeadHeight() {
+-        return this.length / 2;
+-    }
+-    // SulphurSpigot end
+ }
 diff --git a/src/main/java/net/minecraft/server/EntityMovingBlock.java b/src/main/java/net/minecraft/server/EntityMovingBlock.java
 new file mode 100644
-index 00000000..aec2add2
+index 00000000..9a9db9a7
 --- /dev/null
 +++ b/src/main/java/net/minecraft/server/EntityMovingBlock.java
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,37 @@
 +package net.minecraft.server;
 +
 +import org.bukkit.Location;
@@ -81,9 +102,26 @@ index 00000000..aec2add2
 +        this.lastY = d1;
 +        this.lastZ = d2;
 +    }
++
++    // SulphurSpigot start - always fix cannons
++    @Override
++    public double f(double d0, double d1, double d2) {
++
++        double d3 = this.locX - d0;
++        double d4 = this.locY + this.getHeadHeight() - d1;
++        double d5 = this.locZ - d2;
++
++        return (double) MathHelper.sqrt(d3 * d3 + d4 * d4 + d5 * d5);
++    }
++
++    @Override
++    public float getHeadHeight() {
++        return this.length / 2;
++    }
++    // SulphurSpigot end
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index ab163cd1..a3be2894 100644
+index ab163cd1..6135429a 100644
 --- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 +++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 @@ -2,39 +2,20 @@ package net.minecraft.server;
@@ -129,6 +167,34 @@ index ab163cd1..a3be2894 100644
      }
  
      protected void h() {}
+@@ -148,27 +129,11 @@ public class EntityTNTPrimed extends Entity {
+         return this.source;
+     }
+ 
+-    // SulphurSpigot start - always fix cannons
+-    @Override
+-    public double f(double d0, double d1, double d2) {
+-
+-        double d3 = this.locX - d0;
+-        double d4 = this.locY + this.getHeadHeight() - d1;
+-        double d5 = this.locZ - d2;
+-
+-        return (double) MathHelper.sqrt(d3 * d3 + d4 * d4 + d5 * d5);
+-    }
+-
+     @Override
+     public boolean aL() {
+         return false;
+     }
+ 
+-    @Override
+-    public float getHeadHeight() {
+-        return this.length / 2;
+-    }
+-
+     @Override
+     public boolean W() {
+         // Preserve velocity while calling the super method
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
 index c4ebdba0..e1377561 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
