@@ -1,0 +1,46 @@
+From 047d3c8c1bf95f257e0b058378dfbfd2d06382e1 Mon Sep 17 00:00:00 2001
+From: AmbrosL <AmbrosL@users.noreply.github.com>
+Date: Sun, 17 Jun 2018 12:24:16 +0200
+Subject: [PATCH] simplify explosions
+
+
+diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
+index e13775611..49f154aba 100644
+--- a/src/main/java/net/minecraft/server/Explosion.java
++++ b/src/main/java/net/minecraft/server/Explosion.java
+@@ -119,8 +119,22 @@ public class Explosion {
+ 
+         for (int l1 = 0; l1 < list.size(); ++l1) {
+             Entity entity = (Entity) list.get(l1);
++            if(entity instanceof  EntityMovingBlock) { // SulphurSpigot - simplify explosions
++                double d8 = entity.locX - this.posX;
++                double d9 = entity.locY + (double) entity.getHeadHeight() - this.posY;
++                double d10 = entity.locZ - this.posZ;
++                double d11 = (double) MathHelper.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
+ 
+-            if (!entity.aW()) {
++                if (0.0D < d11 && d11 <= f3) {
++                    double d13 = (1.0D - d11/(double) f3) * (double) this.world.a(vec3d, entity.getBoundingBox()) / d11;
++
++                    CraftEventFactory.entityDamage = source;
++                    entity.forceExplosionKnockback = false;
++                    CraftEventFactory.entityDamage = null;
++
++                    entity.g(d8 * d13, d9 * d13, d10 * d13);
++                }
++            } else if (!entity.aW()) {
+                 double d7 = entity.f(this.posX, this.posY, this.posZ) / (double) f3;
+ 
+                 if (d7 <= 1.0D) {
+@@ -141,7 +155,7 @@ public class Explosion {
+                         entity.forceExplosionKnockback = false;
+                         boolean wasDamaged = entity.damageEntity(DamageSource.explosion(this), (float) ((int) ((d13 * d13 + d13) / 2.0D * 8.0D * (double) f3 + 1.0D)));
+                         CraftEventFactory.entityDamage = null;
+-                        if (!wasDamaged && !(entity instanceof EntityMovingBlock) && !entity.forceExplosionKnockback) {
++                        if (!wasDamaged && !entity.forceExplosionKnockback) {
+                             continue;
+                         }
+                         // CraftBukkit end
+-- 
+2.17.1.windows.2
+

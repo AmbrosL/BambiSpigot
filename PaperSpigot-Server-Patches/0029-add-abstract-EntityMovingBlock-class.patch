@@ -1,11 +1,11 @@
-From 86abb715360cd9bdebc9330fd22e7659210aad06 Mon Sep 17 00:00:00 2001
+From c4c662659a36c89246492149a3e58233e3e27bc8 Mon Sep 17 00:00:00 2001
 From: AmbrosL <AmbrosL@users.noreply.github.com>
 Date: Sat, 2 Jun 2018 19:59:53 +0200
 Subject: [PATCH] add abstract EntityMovingBlock class
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
-index e670bfc5..5be17edb 100644
+index e670bfc59..5be17edb3 100644
 --- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
 +++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
 @@ -6,7 +6,7 @@ import java.util.Iterator;
@@ -79,7 +79,7 @@ index e670bfc5..5be17edb 100644
  }
 diff --git a/src/main/java/net/minecraft/server/EntityMovingBlock.java b/src/main/java/net/minecraft/server/EntityMovingBlock.java
 new file mode 100644
-index 00000000..9a9db9a7
+index 000000000..9a9db9a77
 --- /dev/null
 +++ b/src/main/java/net/minecraft/server/EntityMovingBlock.java
 @@ -0,0 +1,37 @@
@@ -121,7 +121,7 @@ index 00000000..9a9db9a7
 +    // SulphurSpigot end
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index ab163cd1..6135429a 100644
+index ab163cd1f..6135429a2 100644
 --- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 +++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 @@ -2,39 +2,20 @@ package net.minecraft.server;
@@ -196,7 +196,7 @@ index ab163cd1..6135429a 100644
      public boolean W() {
          // Preserve velocity while calling the super method
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index c4ebdba0..e1377561 100644
+index c4ebdba0e..e13775611 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -141,7 +141,7 @@ public class Explosion {
@@ -209,9 +209,18 @@ index c4ebdba0..e1377561 100644
                          }
                          // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 6f0b6efc..70c8e415 100644
+index 6f0b6efc6..5a1a89017 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
+@@ -1215,7 +1215,7 @@ public abstract class World implements IBlockAccess {
+                             {
+                                 // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
+                                 Block b = block.getBlock();
+-                                if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) && (b instanceof BlockSign || b instanceof BlockFenceGate || b instanceof BlockTorch || b instanceof BlockButtonAbstract || b instanceof BlockLever || b instanceof BlockTripwireHook || b instanceof BlockTripwire || b instanceof BlockChest || b instanceof BlockSlowSand || b instanceof BlockBed || b instanceof BlockEnderChest || b instanceof BlockEnchantmentTable || b instanceof BlockBrewingStand)) {
++                                if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityMovingBlock) && (b instanceof BlockSign || b instanceof BlockFenceGate || b instanceof BlockTorch || b instanceof BlockButtonAbstract || b instanceof BlockLever || b instanceof BlockTripwireHook || b instanceof BlockTripwire || b instanceof BlockChest || b instanceof BlockSlowSand || b instanceof BlockBed || b instanceof BlockEnderChest || b instanceof BlockEnchantmentTable || b instanceof BlockBrewingStand)) {
+                                     AxisAlignedBB aabb = AxisAlignedBB.a(x, y, z, x + 1.0, y + 1.0, z + 1.0);
+                                     if (axisalignedbb.b(aabb)) arraylist.add(aabb);
+                                 } else {
 @@ -1232,8 +1232,7 @@ public abstract class World implements IBlockAccess {
  
          if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
