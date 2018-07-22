@@ -1,0 +1,36 @@
+From fd400904c7565af2e93729d5e4462c2f68660d2f Mon Sep 17 00:00:00 2001
+From: AmbrosL <AmbrosL@users.noreply.github.com>
+Date: Sun, 22 Jul 2018 15:39:00 +0200
+Subject: [PATCH] tnt ignores water
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+index 6135429a2..1ba1c68a1 100644
+--- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+@@ -67,7 +67,7 @@ public class EntityTNTPrimed extends EntityMovingBlock {
+             this.die();
+             // CraftBukkit end
+         } else {
+-            this.W();
++            if(!this.world.tacoSpigotConfig.tntIgnoresWater) this.W();
+             this.world.addParticle(EnumParticle.SMOKE_NORMAL, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D, new int[0]);
+         }
+ 
+diff --git a/src/main/java/net/techcable/tacospigot/TacoSpigotWorldConfig.java b/src/main/java/net/techcable/tacospigot/TacoSpigotWorldConfig.java
+index 8c1f1a758..3b21a99f3 100644
+--- a/src/main/java/net/techcable/tacospigot/TacoSpigotWorldConfig.java
++++ b/src/main/java/net/techcable/tacospigot/TacoSpigotWorldConfig.java
+@@ -110,4 +110,9 @@ public class TacoSpigotWorldConfig {
+ 
+     public boolean disableFallingBlockStackingAt256;
+     private void DisableFallingBlockStackingAt256() { disableFallingBlockStackingAt256 = getBoolean("disable-falling-block-stacking-at-256", false);}
++
++    public boolean tntIgnoresWater;
++    private void tntIgnoresWater() {
++        tntIgnoresWater = getBoolean("sulphur.tnt-ignores-water", false);
++    }
+ }
+-- 
+2.18.0.windows.1
+
